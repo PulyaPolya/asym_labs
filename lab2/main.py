@@ -103,19 +103,30 @@ def verify(m,s, e,n):
         return 'wrong'
 m = 1234
 
-secret, public = generate_keys(1,1000)
-print(secret, public)
-n = public["n"]
-e = public["e"]
-d = secret['d']
-print(f'n: {n}, e: {e}, m: {m}')
-print(f'n_hex: {hex(n)[2:]}, e_hex: {hex(e)[2:]}, m_hex: {hex(m)[2:]}')
+# secret, public = generate_keys(1,1000)
+# print(secret, public)
+# n = public["n"]
+# e = public["e"]
+# d = secret['d']
+# p = secret['p']
+# q = secret['q']
+#
+# print(f'n: {n}, e: {e}, m: {m}')
+# print(f'n_hex: {hex(n)[2:]}, e_hex: {hex(e)[2:]}, m_hex: {hex(m)[2:]}, d_hex :{hex(d)[2:]},'
+#       f' p_hex:{hex(p)[2:]}, q_hex:{hex(q)[2:]}')
+n = 0x221943b
+e = 0x10001
+d = 0x1885481
+p = 0x1885481
+q = 0x1543
+code = 0xE759B3
+print(decode(code, d, n))
 # cypher = cypher(m,e,n)
 # print(hex(cypher)[2:])
-# message = decode(cypher, d,n)
+# message = decode(c, d,n)
 # print(message)
-public_exp = 0x10001
-modulus= 0x87DE232DF952027CE97F6649F3FC1B43
-code = cypher(m, public_exp,modulus)
-print(hex(code))
+# public_exp = 0x10001
+# modulus= 0x87DE232DF952027CE97F6649F3FC1B43
+# code = cypher(m, public_exp,modulus)
+# print(hex(code))
 
