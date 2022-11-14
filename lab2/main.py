@@ -1,38 +1,30 @@
 import random
 import math
-def bitfield(n):
-    return [1 if digit=='1' else 0 for digit in bin(n)[2:]]
-def bit_to_byte(sequence):
-    n = len(sequence)
-    resulting_len = math.floor(n/8)
-    bait_arr = []
-    rest = n %8
-    for i in range(0,n - rest, 8):
-        bin = sequence[i: i+8]
-        res = int("".join(str(x) for x in bin), 2)
-        bait_arr.append(res)
-    if rest > 0:
-        residue = sequence[-rest:]
-        arr = [0]*(8-rest)
-        arr += residue
-        res = int("".join(str(x) for x in arr), 2)
-        bait_arr.append(res)
-    return bait_arr
+from bitarray.util import int2ba
+import struct
+from bitarray.util import ba2int
+
+
 
 def generate_number(range):
     r = random.randint(range[0], range[1])
     return r
 
-def miller_rabin(p):
+def factor(p):
+    a = int2ba(p)
     s = 0
-    d = p-1
-    while d % 2 == 0:
-        s += 1
-        d /= 2
-    d = int(d)
-    arr_x = [2,3,5,7]
-    for x in arr_x:
-        #x = generate_number([1,p-1])
+    while a[-1] ==0:
+        s+=1
+        a.pop(-1)
+    i = ba2int(a)
+    return(s,i)
+def miller_rabin(p):
+    k = 50
+    s,d = factor(p-1)
+    #arr_x = [2,3,5,7]
+    for i in range(k):
+
+        x = generate_number([1,p-1])
         gcd = math.gcd(p,x)
         if gcd >1 :
             return 'not prime'
@@ -40,14 +32,12 @@ def miller_rabin(p):
         x_d = pow(x,d,p)
         if x_d == 1 or x_d == p-1:
             pseudo_prime = True
-            #return 'prime'
         else:
             for i in range(s):
-                x_d = x_d **2
-                x_d = x_d %p
+                x_d =pow(x_d,2,p)
                 if x_d == p-1:
                     pseudo_prime = True
-                    #return 'prime'
+                    break
                 elif x_d == 1:
                     return 'not prime'
         if pseudo_prime == False:
@@ -110,45 +100,51 @@ def send_key(n, k,d, e_bob, n_bob):
     S = pow(k,d,n)
     S1 = pow(S, e_bob, n_bob)
     return (k1, S1)
-def receive_key(S1, k1, n_bob, d_bob):
-    k = pow(k1, d_bob, n_bob)
-    S = pow(S1, d_bob, n_bob)
-    return (k,S)
-m = 1234
+def receive_key(S1, k1, n1, d1, n):
 
-secret, public = generate_keys(2**100, 2**101)
+    k = pow(k1, d1, n1)
+    S = pow(S1, d1, n1)
+    if k == pow(S, e,n):
+        return ('true', k,S)
+    return (k,S)
+m = 0xaa
+
+secret, public = generate_keys(2**256, 2**258)
 print(secret, public)
 n = public["n"]
 e = public["e"]
 d = secret['d']
 p = secret['p']
 q = secret['q']
-#
+
 print(f'n: {n}, e: {e}, m: {m}')
 print(f'n_hex: {hex(n)[2:]}, e_hex: {hex(e)[2:]}, m_hex: {hex(m)[2:]}, d_hex :{hex(d)[2:]},'
       f' p_hex:{hex(p)[2:]}, q_hex:{hex(q)[2:]}')
-# n = 0x221943b
+# n = 0x8d4d97983d44f6b0456bf6b383bf0d7d1fb0d00ba7d0b7d7d2bf7d383d194668df448327023c14a462d6744f0b935c10981701a16fa7f5abfc5fb696dd1c9ee105f5
 # e = 0x10001
-# d = 0x1885481
-# p = 0x1885481
-# q = 0x1543
-# # code = 0xE759B3
-# # print(decode(code, d, n))
-# # cypher = cypher(m,e,n)
-# # print(hex(cypher)[2:])
-# # message = decode(c, d,n)
-# # print(message)
+# d = 0x7f219486f0791fca306b96a6a49e3c309b56a59817007ea7bb8175d427849a08b76f3295dc989c70944e3aad86153101c0cb585242b86ae3bde454577dea180b1471
+# p = 0x14596e7a5001c21f23d6d770bccda5b10f960faeb5bf8ece95337bb6c62de5c2bef
+# q = 0x6f1a12bc5b7c8ac5c4b53d4fe900245a68d64e59e04a5b51532ae87d7bacf1185b
 # public_exp = 0x10001
-# modulus= 0x1A60A3D072F80899EABDDB2EA0619A0DF
-# # code = cypher(m, public_exp,modulus)
-# # print(hex(code))
-# signature_bob = 0x2E2EE9D3B8AA931CB240F9A13C5D3B10
-# # print(verify(m,signature_bob, public_exp,modulus))
-# # signature_alice= sign(m, d, n)
-# # print(hex(signature_alice[0]))
+# modulus= 0xB492E58FA2BF2B5FDDF20DABEA38A23A6B6ED27DE675945ADE169895D34FA637B3EF946F637C44949249501E35B643D25D40E235E41888DF4449B8ACD3D0CE1ED34EF5FC63E4E68F2CD03F
+# modulus_little = 0x1CC4857513437109824B0198AEAE160B3
+# code = 0x3D418A2EB7B2F007159725F57345181B19FE76655B96890B76F26B4897056932C3609BDBBA041670A0345060C24FCA9930AB3DE74219A0431301A0ED9EE8E5BB3C35
+# print(hex(decode(code, d, n)))
+
+# code = cypher(m, public_exp,modulus)
+# print(hex(code))
+# signature_bob = 0x8B83051B09CA24737C8AF754A1A9F89225CFDDD949DE230C3D5312285F8CFC066EF043EF709B79BF3240F67EF4CAA83FC415264542BECFC13C88D14A9F7F669B975393E8623F58E7697054
+# print(verify(m,signature_bob, public_exp,modulus))
+# signature_alice= sign(m, d, n)
+# print(hex(signature_alice[0]))
 # k = 0x123456
-# res = send_key(n, k,d, public_exp, modulus)
-# print(hex(res[0])[2:], hex(res[1])[2:])
-# numbers = list(range(2,100))
-# for n in numbers:
-#     print(n,' ', miller_rabin(n))
+# k1, S1 = send_key(n, k,d, public_exp, modulus)
+# print(hex(k1))
+# print(hex(S1))
+S1  =0x36F50588B9040A9F3257089B1298629DC3FF251755FD585D1E79B6198046E6A108A663A1B1533C0C2089E01996B90003E059B1A5F530AC48F41A96BC8D53927C7765
+k1 = 0x57E3E087AEF37057388A4138204D0F2AF4A63F94D58BAD3C6CB57394A0ECE4A8652D300B8CC5805CAA384939FFFA7635BCEC1C74C268AD68CE6F728F77D1CCF45D69
+print(receive_key(S1, k1, n, d, modulus_little))
+# cypher = cypher(m,e,n)
+# print(hex(cypher)[2:])
+# message = decode(c, d,n)
+# print(message)
